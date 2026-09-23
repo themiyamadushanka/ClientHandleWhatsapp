@@ -48,7 +48,7 @@ async function connectToWhatsApp() {
         },4000);
     }
 
-    sock.ev.on('connection.update', (update) => {
+    sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect, qr } = update
         if (qr) {
             qrcode.generate(qr, { small: true })
@@ -63,6 +63,7 @@ async function connectToWhatsApp() {
             }
         } else if (connection === 'open') {
             console.log('opened connection')
+            await sock.sendPresenceUpdate('unavailable')
         }
     })
 
@@ -71,7 +72,7 @@ async function connectToWhatsApp() {
         for (const m of event.messages) {
             if (m.key.fromMe) continue
             
-            // Skip duplicate messages
+    
             const messageId = m.key.id
             if (isAlreadyProcessed(messageId)) {
                 console.log('Skipping duplicate message:', messageId)
@@ -92,7 +93,7 @@ async function connectToWhatsApp() {
                 await delay(Math.floor(Math.random() * (5000-2000+1) + 2000));
                 await sock.sendPresenceUpdate('paused', remoteJid)
                 await sock.sendMessage(remoteJid, { text: 'pong' })
-                //await sock.sendPresenceUpdate('unavailable')
+                await sock.sendPresenceUpdate('unavailable')
             }
 
             else if (text.trim()) {
@@ -105,8 +106,8 @@ async function connectToWhatsApp() {
                     console.error('AI reply failed:', error.message)
                     await sock.sendMessage(remoteJid, { text: 'Sorry, I could not answer right now.' })
                 } finally {
-                    await sock.sendPresenceUpdate('paused'  , remoteJid)
-                   // await sock.sendPresenceUpdate('unavailable')
+                    await sock.sendPresenceUpdate('paused', remoteJid)
+                    await sock.sendPresenceUpdate('unavailable')
                 }
             }
             }
