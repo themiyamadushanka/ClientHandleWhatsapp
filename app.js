@@ -1,13 +1,16 @@
 import makeWASocket, { DisconnectReason, useMultiFileAuthState } from '@whiskeysockets/baileys'
 import qrcode from 'qrcode-terminal'
 import pino from 'pino'
+import express from 'express'
 //import { askAI } from './aiChat.js'
 process.loadEnvFile()
 
 const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds))
 const allowedRemoteJid = process.env.ALLOWJID
 import { handle } from './handle.js'
+const app = express()
 
+app.get('/', (req, res) => {res.send('Bot is running!')});
 
 async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys')
@@ -79,3 +82,7 @@ sock.ev.on('creds.update', saveCreds)
 }
 
 connectToWhatsApp()
+
+app.listen(3000, () => {
+    console.log('Server is running on port 3000')
+})
