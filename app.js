@@ -18,8 +18,20 @@ async function connectToWhatsApp() {
     const sock = makeWASocket({
         auth: state,
         markOnlineOnConnect: false,
-        logger: pino({ level: 'silent' })
+        logger: pino({ level: 'silent' }),
+        browser: ['Ubuntu', 'Chrome', '20.0.04'] 
     })
+
+    if(!sock.authState.creds.registered) {
+        const PhoneNumber = process.env.PHONE
+
+        setTimeout(async ()=>{
+            try{
+                const code = await sock.requestPairingCode(PhoneNumber);
+                console.log(`Code is ${code}`)
+            }catch(err){console.log(err)};
+        },4000);
+    }
 
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update
@@ -31,6 +43,7 @@ async function connectToWhatsApp() {
                 lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut
            // console.log('connection closed due to', lastDisconnect?.error, ', reconnecting:', shouldReconnect)
             if (shouldReconnect) {
+                sock.ev.removeAllListeners()
                 connectToWhatsApp()
             }
         } else if (connection === 'open') {
