@@ -8,6 +8,21 @@ process.loadEnvFile()
 const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds))
 const allowedRemoteJid = process.env.ALLOWJID
 import { handle } from './handle.js'
+
+
+const processedMessages = new Map() 
+const MSG_EXPIRY_MS = 10 * 60 * 1000 
+
+function isAlreadyProcessed(messageId) {
+    const now = Date.now()
+    for (const [id, timestamp] of processedMessages) {
+        if (now - timestamp > MSG_EXPIRY_MS) processedMessages.delete(id)
+    }
+    
+    if (processedMessages.has(messageId)) return true
+    processedMessages.set(messageId, now)
+    return false
+}
 const app = express()
 
 app.get('/', (req, res) => {res.send('Bot is running!')});
@@ -55,6 +70,14 @@ async function connectToWhatsApp() {
         if (event.type !== 'notify') return
         for (const m of event.messages) {
             if (m.key.fromMe) continue
+            
+            // Skip duplicate messages
+            const messageId = m.key.id
+            if (isAlreadyProcessed(messageId)) {
+                console.log('Skipping duplicate message:', messageId)
+                continue
+            }
+            
             const remoteJid = m.key.remoteJid
             console.log(remoteJid)
 
