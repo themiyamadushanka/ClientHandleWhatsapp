@@ -69,7 +69,7 @@ async function connectToWhatsApp() {
                 await delay(Math.floor(Math.random() * (5000-2000+1) + 2000));
                 await sock.sendPresenceUpdate('paused', remoteJid)
                 await sock.sendMessage(remoteJid, { text: 'pong' })
-                //await sock.sendPresenceUpdate('unavailable')
+                await sock.sendPresenceUpdate('unavailable')
             }
 
             else if (text.trim()) {
@@ -83,7 +83,7 @@ async function connectToWhatsApp() {
                     await sock.sendMessage(remoteJid, { text: 'Sorry, I could not answer right now.' })
                 } finally {
                     await sock.sendPresenceUpdate('paused'  , remoteJid)
-                   // await sock.sendPresenceUpdate('unavailable')
+                   await sock.sendPresenceUpdate('unavailable')
                 }
             }
             }
