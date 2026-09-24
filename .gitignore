@@ -1,3 +1,7 @@
 .env
 auth_info_baileys/
 node_modules/
+yt-dlp.exe
+*.mp3
+*.mp4
+*.webm

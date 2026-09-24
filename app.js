@@ -4,6 +4,7 @@ import pino from 'pino'
 import express from 'express'
 //import { askAI } from './aiChat.js'
 process.loadEnvFile()
+import {YoutubeDownloader} from './ytdownloader(p).js';
 
 const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds))
 const allowedRemoteJid = process.env.ALLOWJID
@@ -70,6 +71,17 @@ async function connectToWhatsApp() {
                 await sock.sendPresenceUpdate('paused', remoteJid)
                 await sock.sendMessage(remoteJid, { text: 'pong' })
                 await sock.sendPresenceUpdate('unavailable')
+            }
+            else if (text.startsWith('/play ')){
+                const promt = text.replace('/play ','');
+                try {
+                    await YoutubeDownloader(sock,remoteJid,promt);
+                }catch(err){
+                    console.error('YouTube download failed:', err.message);
+                    try {
+                        await sock.sendMessage(remoteJid, { text: `❌ Download failed: ${err.message}` });
+                    } catch(e) { /* connection may be dead, ignore */ }
+                }
             }
 
             else if (text.trim()) {
